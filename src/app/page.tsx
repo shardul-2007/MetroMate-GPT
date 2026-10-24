@@ -19,6 +19,8 @@ import {
   Zap,
 } from "lucide-react";
 import { getPilotStation } from "@/lib/graph";
+import { MetroTrainAnimation } from "@/components/metro-train-animation";
+import { MaharashtraMetroMap } from "@/components/maharashtra-metro-map";
 
 export default function Home() {
   const router = useRouter();
@@ -45,7 +47,7 @@ export default function Home() {
   return (
     <div style={{ maxWidth: 1040, margin: "0 auto" }}>
       {/* Station Banner */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
         <div>
           <p className="eyebrow">Passenger Information System</p>
           <h1 className="title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -66,8 +68,16 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Stylized Metro Train Arrival & Departure Component */}
+      <div style={{ marginBottom: 18 }} className="animate-fade-in-up">
+        <MetroTrainAnimation
+          lineColor="#6B21A8"
+          stationName="Civil Court Interchange • Line 1 & Line 2"
+        />
+      </div>
+
       {/* Main Journey Planner Card (Transit Style) */}
-      <section className="card card-transit-panel" style={{ marginTop: 12 }}>
+      <section className="card card-transit-panel animate-fade-in-up" style={{ marginTop: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Train size={20} color="var(--primary-green)" />
@@ -282,6 +292,11 @@ export default function Home() {
             </div>
           </Link>
         </div>
+      </div>
+
+      {/* Animated Interactive Maharashtra Metro Map */}
+      <div style={{ marginTop: 24 }} className="animate-fade-in-up">
+        <MaharashtraMetroMap />
       </div>
 
       {/* Two Column Operational Info */}

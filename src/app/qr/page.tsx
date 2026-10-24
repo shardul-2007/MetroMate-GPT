@@ -14,6 +14,7 @@ import {
   QrCode,
   ShieldAlert,
   Train,
+  ScanLine,
 } from "lucide-react";
 import {
   validateQrPayload,
@@ -28,6 +29,7 @@ export default function QrScannerPage() {
   const [validation, setValidation] = useState<QrValidationResult | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
   const handleValidate = (code: string) => {
     setPayloadInput(code);
@@ -43,9 +45,8 @@ export default function QrScannerPage() {
         return;
       }
       setCameraActive(true);
-      // For web demo without native QR camera canvas reader, keep camera stream active or fallback
+      setIsScanning(true);
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      // Stream acquired successfully
       const videoEl = document.getElementById("qr-video-preview") as HTMLVideoElement | null;
       if (videoEl) {
         videoEl.srcObject = stream;
@@ -53,6 +54,7 @@ export default function QrScannerPage() {
       }
     } catch (err: any) {
       setCameraActive(false);
+      setIsScanning(false);
       setCameraError(
         err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError"
           ? "Camera permission was denied. Please use the quick manual payload entry below."
@@ -69,6 +71,7 @@ export default function QrScannerPage() {
       videoEl.srcObject = null;
     }
     setCameraActive(false);
+    setIsScanning(false);
   };
 
   return (
@@ -95,7 +98,7 @@ export default function QrScannerPage() {
         <section className="card card-transit-panel">
           <h2 style={{ fontSize: 17, margin: "0 0 10px" }}>Identify Starting Point</h2>
 
-          {/* Camera Scanning Section */}
+          {/* Camera Scanning Section with Animated Scan Frame */}
           <div style={{ marginBottom: 18 }}>
             {!cameraActive ? (
               <button
@@ -111,24 +114,45 @@ export default function QrScannerPage() {
                 <div
                   style={{
                     width: "100%",
-                    height: 220,
-                    background: "#000",
+                    height: 230,
+                    background: "#0F172A",
                     borderRadius: "var(--radius-sm)",
                     overflow: "hidden",
                     position: "relative",
                   }}
                 >
                   <video id="qr-video-preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+
+                  {/* Target Crosshair & Animated Moving Scan Line */}
                   <div
                     style={{
                       position: "absolute",
-                      inset: "20%",
+                      inset: "15%",
                       border: "2px dashed #147D5A",
                       borderRadius: 8,
                       pointerEvents: "none",
                     }}
-                  />
+                  >
+                    {isScanning && <div className="qr-laser-line" />}
+                  </div>
+
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 8,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      background: "rgba(0,0,0,0.6)",
+                      color: "#FFF",
+                      fontSize: 11,
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                    }}
+                  >
+                    Align QR plaque inside box
+                  </div>
                 </div>
+
                 <button
                   type="button"
                   className="button outline"
@@ -170,9 +194,10 @@ export default function QrScannerPage() {
             </div>
           </div>
 
-          {/* Resolved Location Preview */}
+          {/* Resolved Location Preview with Smooth Transition */}
           {validation && (
             <div
+              className="animate-fade-in-up"
               style={{
                 marginTop: 18,
                 padding: 14,
@@ -184,7 +209,7 @@ export default function QrScannerPage() {
               {validation.valid && validation.node && validation.station ? (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--deep-green)", fontWeight: 700, fontSize: 13 }}>
-                    <CheckCircle2 size={16} /> Location Confirmed
+                    <CheckCircle2 size={16} /> Location Verified
                   </div>
                   <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800 }}>
                     {validation.node.label}

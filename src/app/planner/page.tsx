@@ -129,7 +129,7 @@ export default function Planner() {
 
       {/* Results Section */}
       {shown && (
-        <section style={{ marginTop: 22 }}>
+        <section style={{ marginTop: 22 }} className="animate-fade-in-up">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <h2 style={{ fontSize: 18, margin: 0 }}>Available Route Itineraries</h2>
             <span className="badge demo">Demonstration Itineraries</span>
@@ -137,7 +137,14 @@ export default function Planner() {
 
           <div style={{ display: "grid", gap: 12 }}>
             {routes.map((r, i) => (
-              <article key={r.id} className="card" style={{ borderLeft: i === 0 ? "4px solid var(--primary-green)" : "1px solid var(--border)" }}>
+              <article
+                key={r.id}
+                className="card animate-fade-in-up"
+                style={{
+                  borderLeft: i === 0 ? "4px solid var(--primary-green)" : "1px solid var(--border)",
+                  animationDelay: `${i * 80}ms`,
+                }}
+              >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     {i === 0 && <span className="pill green">Recommended</span>}

@@ -1,0 +1,143 @@
+{
+  "networks": [
+    {
+      "id": "pune",
+      "city": "Pune",
+      "name": "Pune Metro (Maha Metro)",
+      "operator": "Maharashtra Metro Rail Corporation Limited (Maha Metro)",
+      "status": "Operational & Expanding",
+      "lines": [
+        {
+          "id": "pune-purple",
+          "name": "Purple Line (Line 1)",
+          "color": "#6B21A8",
+          "accent": "#9333EA",
+          "terminals": "PCMC ↔ Swargate",
+          "lengthKm": 17.5,
+          "stations": [
+            { "id": "pcmc", "name": "PCMC", "x": 100, "y": 60, "isInterchange": false },
+            { "id": "bhosari", "name": "Bhosari", "x": 140, "y": 90, "isInterchange": false },
+            { "id": "kasarwadi", "name": "Kasarwadi", "x": 180, "y": 120, "isInterchange": false },
+            { "id": "phugewadi", "name": "Phugewadi", "x": 220, "y": 150, "isInterchange": false },
+            { "id": "dapodi", "name": "Dapodi", "x": 260, "y": 180, "isInterchange": false },
+            { "id": "bopodi", "name": "Bopodi", "x": 300, "y": 210, "isInterchange": false },
+            { "id": "khadki", "name": "Khadki", "x": 340, "y": 240, "isInterchange": false },
+            { "id": "shivaji-nagar", "name": "Shivaji Nagar", "x": 380, "y": 270, "isInterchange": false },
+            { "id": "civil-court", "name": "Civil Court", "x": 420, "y": 300, "isInterchange": true, "interchangeLines": ["pune-purple", "pune-aqua"], "hasIndoorWayfinding": true },
+            { "id": "budhwar-peth", "name": "Budhwar Peth", "x": 460, "y": 330, "isInterchange": false },
+            { "id": "mandai", "name": "Mandai", "x": 500, "y": 360, "isInterchange": false },
+            { "id": "swargate", "name": "Swargate", "x": 540, "y": 390, "isInterchange": false }
+          ]
+        },
+        {
+          "id": "pune-aqua",
+          "name": "Aqua Line (Line 2)",
+          "color": "#0284C7",
+          "accent": "#38BDF8",
+          "terminals": "Vanaz ↔ Ramwadi",
+          "lengthKm": 15.7,
+          "stations": [
+            { "id": "vanaz", "name": "Vanaz", "x": 140, "y": 420, "isInterchange": false },
+            { "id": "ideal-colony", "name": "Ideal Colony", "x": 200, "y": 390, "isInterchange": false },
+            { "id": "nal-stop", "name": "Nal Stop", "x": 260, "y": 360, "isInterchange": false },
+            { "id": "garware-college", "name": "Garware College", "x": 320, "y": 330, "isInterchange": false },
+            { "id": "pmc", "name": "PMC", "x": 370, "y": 315, "isInterchange": false },
+            { "id": "civil-court", "name": "Civil Court", "x": 420, "y": 300, "isInterchange": true, "interchangeLines": ["pune-purple", "pune-aqua"], "hasIndoorWayfinding": true },
+            { "id": "mangalwar-peth", "name": "Mangalwar Peth", "x": 480, "y": 270, "isInterchange": false },
+            { "id": "pune-railway-station", "name": "Pune Rly Stn", "x": 540, "y": 240, "isInterchange": false },
+            { "id": "ruby-hall", "name": "Ruby Hall Clinic", "x": 600, "y": 210, "isInterchange": false },
+            { "id": "bund-garden", "name": "Bund Garden", "x": 660, "y": 180, "isInterchange": false },
+            { "id": "kalyani-nagar", "name": "Kalyani Nagar", "x": 720, "y": 150, "isInterchange": false },
+            { "id": "ramwadi", "name": "Ramwadi", "x": 780, "y": 120, "isInterchange": false }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mumbai",
+      "city": "Mumbai",
+      "name": "Mumbai Metro (Maha Mumbai)",
+      "operator": "MMRDA / Metro Line 1, 2A, 3, 7",
+      "status": "Operational Network",
+      "lines": [
+        {
+          "id": "mumbai-line-1",
+          "name": "Line 1 (Blue Line)",
+          "color": "#2563EB",
+          "accent": "#60A5FA",
+          "terminals": "Versova ↔ Ghatkopar",
+          "lengthKm": 11.4,
+          "stations": [
+            { "id": "versova", "name": "Versova", "x": 100, "y": 200, "isInterchange": false },
+            { "id": "dn-nagar", "name": "D.N. Nagar", "x": 180, "y": 200, "isInterchange": true, "interchangeLines": ["mumbai-line-1", "mumbai-line-2a"] },
+            { "id": "azad-nagar", "name": "Azad Nagar", "x": 260, "y": 200, "isInterchange": false },
+            { "id": "andheri", "name": "Andheri", "x": 340, "y": 200, "isInterchange": false },
+            { "id": "weath", "name": "WEH", "x": 420, "y": 200, "isInterchange": true, "interchangeLines": ["mumbai-line-1", "mumbai-line-7"] },
+            { "id": "airport-road", "name": "Airport Road", "x": 500, "y": 200, "isInterchange": false },
+            { "id": "marol-naka", "name": "Marol Naka", "x": 580, "y": 200, "isInterchange": true, "interchangeLines": ["mumbai-line-1", "mumbai-line-3"] },
+            { "id": "saki-naka", "name": "Saki Naka", "x": 660, "y": 200, "isInterchange": false },
+            { "id": "ghatkopar", "name": "Ghatkopar", "x": 740, "y": 200, "isInterchange": false }
+          ]
+        },
+        {
+          "id": "mumbai-line-3",
+          "name": "Line 3 (Aqua Underground)",
+          "color": "#0D9488",
+          "accent": "#2DD4BF",
+          "terminals": "Aarey JVLR ↔ BKC",
+          "lengthKm": 12.6,
+          "stations": [
+            { "id": "aarey-jvlr", "name": "Aarey JVLR", "x": 580, "y": 80, "isInterchange": false },
+            { "id": "seepz", "name": "SEEPZ", "x": 580, "y": 140, "isInterchange": false },
+            { "id": "marol-naka", "name": "Marol Naka", "x": 580, "y": 200, "isInterchange": true, "interchangeLines": ["mumbai-line-1", "mumbai-line-3"] },
+            { "id": "csmia-t2", "name": "CSMIA T2 (Airport)", "x": 580, "y": 260, "isInterchange": false },
+            { "id": "sahar-road", "name": "Sahar Road", "x": 580, "y": 320, "isInterchange": false },
+            { "id": "santacruz", "name": "Santacruz Metro", "x": 580, "y": 380, "isInterchange": false },
+            { "id": "bkc", "name": "BKC", "x": 580, "y": 440, "isInterchange": false }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nagpur",
+      "city": "Nagpur",
+      "name": "Nagpur Metro (Maha Metro)",
+      "operator": "Maharashtra Metro Rail Corporation Limited",
+      "status": "Operational Network",
+      "lines": [
+        {
+          "id": "nagpur-orange",
+          "name": "Orange Line (North-South)",
+          "color": "#EA580C",
+          "accent": "#FB923C",
+          "terminals": "Automotive Sq ↔ Khapri",
+          "lengthKm": 19.6,
+          "stations": [
+            { "id": "automotive-sq", "name": "Automotive Square", "x": 420, "y": 60, "isInterchange": false },
+            { "id": "indora-sq", "name": "Indora Square", "x": 420, "y": 120, "isInterchange": false },
+            { "id": "kasturchand", "name": "Kasturchand Park", "x": 420, "y": 180, "isInterchange": false },
+            { "id": "sitabuldi", "name": "Sitabuldi Interchange", "x": 420, "y": 240, "isInterchange": true, "interchangeLines": ["nagpur-orange", "nagpur-aqua"] },
+            { "id": "congress-nagar", "name": "Congress Nagar", "x": 420, "y": 300, "isInterchange": false },
+            { "id": "airport", "name": "Nagpur Airport", "x": 420, "y": 360, "isInterchange": false },
+            { "id": "khapri", "name": "Khapri", "x": 420, "y": 420, "isInterchange": false }
+          ]
+        },
+        {
+          "id": "nagpur-aqua",
+          "name": "Aqua Line (East-West)",
+          "color": "#0284C7",
+          "accent": "#38BDF8",
+          "terminals": "Prajapati Nagar ↔ Lokmanya Nagar",
+          "lengthKm": 18.5,
+          "stations": [
+            { "id": "prajapati-nagar", "name": "Prajapati Nagar", "x": 120, "y": 240, "isInterchange": false },
+            { "id": "railway-station", "name": "Nagpur Rly Stn", "x": 260, "y": 240, "isInterchange": false },
+            { "id": "sitabuldi", "name": "Sitabuldi Interchange", "x": 420, "y": 240, "isInterchange": true, "interchangeLines": ["nagpur-orange", "nagpur-aqua"] },
+            { "id": "shankar-nagar", "name": "Shankar Nagar", "x": 560, "y": 240, "isInterchange": false },
+            { "id": "lokmanya-nagar", "name": "Lokmanya Nagar", "x": 720, "y": 240, "isInterchange": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -758,3 +758,107 @@ input:focus, select:focus, textarea:focus {
     color: var(--deep-green);
   }
 }
+
+/* Animation System */
+@keyframes transitFlow {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animated-transit-flow {
+  animation: transitFlow 2.5s linear infinite;
+}
+
+@keyframes pulseStationRing {
+  0% {
+    r: 10px;
+    opacity: 0.8;
+  }
+  50% {
+    r: 18px;
+    opacity: 0.3;
+  }
+  100% {
+    r: 10px;
+    opacity: 0.8;
+  }
+}
+
+.pulse-station-ring {
+  animation: pulseStationRing 2s ease-in-out infinite;
+}
+
+@keyframes pulseInterchange {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.interchange-ring {
+  animation: pulseInterchange 3s ease-in-out infinite;
+}
+
+@keyframes qrLaser {
+  0% {
+    top: 8%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 88%;
+    opacity: 1;
+  }
+  100% {
+    top: 8%;
+    opacity: 0.8;
+  }
+}
+
+.qr-laser-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  background: var(--primary-green);
+  box-shadow: 0 0 6px var(--primary-green);
+  animation: qrLaser 2.2s ease-in-out infinite;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .animated-transit-flow,
+  .pulse-station-ring,
+  .interchange-ring,
+  .qr-laser-line {
+    animation: none !important;
+  }
+}
