@@ -3,7 +3,7 @@ export type Expense={id:string;title:string;amount:number;category:Mode;date:str
 export type Route={id:string;name:string;cost:number;duration:number;walking:number;transfers:number;detail:string};
 export type Preference="balanced"|"cheapest"|"fastest"|"least-walking";
 export const demoRoutes:Route[]=[{id:"balanced",name:"Metro + walk",cost:42,duration:48,walking:.7,transfers:1,detail:"Illustrative metro fare and walking estimate; not live Pune Metro routing."},{id:"fast",name:"Metro + auto",cost:96,duration:35,walking:.2,transfers:1,detail:"Illustrative metro + first/last-mile auto estimate; not live Pune Metro routing."},{id:"budget",name:"Bus",cost:28,duration:62,walking:.5,transfers:0,detail:"Illustrative bus estimate; not live Pune transit routing."},{id:"walk",name:"Walk",cost:0,duration:115,walking:8.1,transfers:0,detail:"Illustrative walking estimate; route safety and accessibility are unknown."}];
-export const money=(value:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(value);
+export const money=(value:number)=>"₹"+Math.round(value).toLocaleString("en-IN");
 export const isExpense=(value:unknown):value is Expense=>typeof value==="object"&&value!==null&&typeof (value as Expense).id==="string"&&typeof (value as Expense).title==="string"&&Number.isFinite((value as Expense).amount)&&(value as Expense).amount>0&&typeof (value as Expense).date==="string";
 export const getExpenses=():Expense[]=>{try{const stored=JSON.parse(localStorage.getItem("metromate-expenses")||"[]");return Array.isArray(stored)?stored.filter(isExpense):[]}catch{return[]}};
 export const saveExpenses=(items:Expense[])=>localStorage.setItem("metromate-expenses",JSON.stringify(items));
