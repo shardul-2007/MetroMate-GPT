@@ -1,248 +1,388 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Accessibility,
+  ArrowDownUp,
   ArrowRight,
-  Bot,
   Compass,
   Footprints,
-  Layers,
+  HelpCircle,
+  Info,
   MapPin,
   QrCode,
+  Route,
   ShieldAlert,
-  Sparkles,
+  Train,
   Zap,
 } from "lucide-react";
-import { demoRoutes, money } from "@/lib/data";
 import { getPilotStation } from "@/lib/graph";
 
 export default function Home() {
+  const router = useRouter();
   const station = getPilotStation();
 
-  return (
-    <>
-      {/* Top Banner / Product Identity */}
-      <p className="eyebrow">Indoor Wayfinding & Navigation</p>
-      <h1 className="title">MetroMate GPT</h1>
-      <p className="sub">
-        Beyond the metro map. Step-by-step indoor station navigation, platform finder, accessibility-first routing, and safe passenger recovery for Pune Metro.
-      </p>
+  // Transit quick route form states
+  const [startId, setStartId] = useState<string>("entrance-north");
+  const [destId, setDestId] = useState<string>("platform-1");
+  const [pref, setPref] = useState<string>("fastest");
+  const [stepFreeOnly, setStepFreeOnly] = useState<boolean>(false);
 
-      {/* Hero Station Navigation Card - Priority 1 Action */}
-      <section className="card card-hero" style={{ marginTop: 24 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+  const handleSwap = () => {
+    const temp = startId;
+    setStartId(destId);
+    setDestId(temp);
+  };
+
+  const handleFindRoute = (e: React.FormEvent) => {
+    e.preventDefault();
+    const effectivePref = stepFreeOnly ? "step-free" : pref;
+    router.push(`/navigation?start=${startId}&dest=${destId}&pref=${effectivePref}`);
+  };
+
+  return (
+    <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+      {/* Station Banner */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+        <div>
+          <p className="eyebrow">Passenger Information System</p>
+          <h1 className="title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span>Pune Metro Navigator</span>
+          </h1>
+          <p className="sub" style={{ margin: 0 }}>
+            Station wayfinding, platform routing, and step-by-step pedestrian navigation for Pune Metro Hubs.
+          </p>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span className="badge verified">
+            ● Normal Service
+          </span>
+          <span className="badge demo">
+            Pilot: Civil Court
+          </span>
+        </div>
+      </div>
+
+      {/* Main Journey Planner Card (Transit Style) */}
+      <section className="card card-transit-panel" style={{ marginTop: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="badge demo">Pilot Pilot Station</span>
-            <span className="badge" style={{ background: "#e0e7ff", color: "#3730a3" }}>
-              {station.name}
-            </span>
+            <Train size={20} color="var(--primary-green)" />
+            <h2 style={{ margin: 0, fontSize: 18 }}>Plan Station Route</h2>
           </div>
-          <span className="muted" style={{ fontSize: 13 }}>
-            {station.line}
+          <span className="muted" style={{ fontSize: 12 }}>
+            Selected Station: <b>Pune Central (Civil Court Interchange)</b>
           </span>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 6px", display: "flex", alignItems: "center", gap: 8 }}>
-            <Compass size={26} color="#6950d5" />
-            Where are you inside the station?
-          </h2>
-          <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-            Choose your starting point and destination to generate turn-by-turn walking steps, stair alerts, and elevator paths.
-          </p>
-        </div>
+        <form onSubmit={handleFindRoute} className="form">
+          <div className="row" style={{ alignItems: "center" }}>
+            <div className="field">
+              <label htmlFor="start-location" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <MapPin size={15} color="#059669" />
+                <span>From (Your Location in Station)</span>
+              </label>
+              <select
+                id="start-location"
+                value={startId}
+                onChange={(e) => setStartId(e.target.value)}
+              >
+                <optgroup label="Entrances & Street Gates">
+                  {station.nodes
+                    .filter((n) => n.type === "entrance")
+                    .map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.label} ({n.level})
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Ticketing & Concourse">
+                  {station.nodes
+                    .filter((n) => ["ticket", "concourse", "lift"].includes(n.type))
+                    .map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.label} ({n.level})
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Platforms">
+                  {station.nodes
+                    .filter((n) => n.type === "platform")
+                    .map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.label} ({n.level})
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Exits">
+                  {station.nodes
+                    .filter((n) => n.type === "exit")
+                    .map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.label} ({n.level})
+                      </option>
+                    ))}
+                </optgroup>
+              </select>
+            </div>
 
-        {/* Quick Action Buttons */}
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
-          <Link
-            className="button"
-            href="/navigation"
-            style={{ fontSize: 15, padding: "12px 20px" }}
-          >
-            Start Inside-Station Navigation <ArrowRight size={17} />
-          </Link>
-
-          <Link
-            className="button secondary"
-            href="/navigation?dest=platform-1"
-            style={{ fontSize: 14 }}
-          >
-            Find My Platform (PCMC)
-          </Link>
-
-          <Link
-            className="button secondary"
-            href="/navigation?dest=platform-2"
-            style={{ fontSize: 14 }}
-          >
-            Find Platform 2 (Swargate)
-          </Link>
-
-          <Link
-            className="button outline"
-            href="/navigation?pref=step-free"
-            style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}
-          >
-            <Accessibility size={16} color="#0369a1" /> Step-Free Elevator Route
-          </Link>
-        </div>
-
-        {/* Quick QR entry bar */}
-        <div
-          style={{
-            marginTop: 20,
-            padding: "12px 16px",
-            background: "#f8fafc",
-            borderRadius: 10,
-            border: "1px dashed #cbd5e1",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <QrCode size={20} color="#6950d5" />
-            <div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>
-                Near a Station Pillar or Counter?
-              </span>
-              <p style={{ margin: 0, fontSize: 12, color: "#64748b" }}>
-                Scan or enter the location code on the indoor wayfinding plaque.
-              </p>
+            <div className="field">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label htmlFor="dest-location" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <MapPin size={15} color="#147D5A" />
+                  <span>To (Destination in Station)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSwap}
+                  className="button outline"
+                  style={{ padding: "2px 8px", fontSize: 11, height: 24, gap: 4 }}
+                  title="Swap start and destination"
+                >
+                  <ArrowDownUp size={12} /> Swap
+                </button>
+              </div>
+              <select
+                id="dest-location"
+                value={destId}
+                onChange={(e) => setDestId(e.target.value)}
+              >
+                <optgroup label="Platforms (Board Train)">
+                  {station.nodes
+                    .filter((n) => n.type === "platform")
+                    .map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.label} ({n.level})
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Exits (Leave Station)">
+                  {station.nodes
+                    .filter((n) => n.type === "exit")
+                    .map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.label} ({n.level})
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Ticketing & Concourse">
+                  {station.nodes
+                    .filter((n) => ["ticket", "concourse", "lift"].includes(n.type))
+                    .map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.label} ({n.level})
+                      </option>
+                    ))}
+                </optgroup>
+              </select>
             </div>
           </div>
 
-          <Link
-            href="/navigation?qr=%7B%22system%22%3A%22pune-metro%22%2C%22stationId%22%3A%22pune-central%22%2C%22nodeId%22%3A%22entrance-north%22%7D"
-            className="button secondary"
-            style={{ fontSize: 12, padding: "6px 12px" }}
-          >
-            Try Demo Station QR
-          </Link>
-        </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginTop: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <label htmlFor="route-pref" style={{ fontSize: 13, fontWeight: 600 }}>
+                  Preference:
+                </label>
+                <select
+                  id="route-pref"
+                  value={pref}
+                  onChange={(e) => setPref(e.target.value)}
+                  disabled={stepFreeOnly}
+                  style={{ padding: "6px 10px", fontSize: 13 }}
+                >
+                  <option value="fastest">Fastest (Escalator / Up)</option>
+                  <option value="least-walking">Least Walking</option>
+                  <option value="fewer-stairs">Fewer Stairs</option>
+                </select>
+              </div>
+
+              <label style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, cursor: "pointer", color: "var(--deep-green)" }}>
+                <input
+                  type="checkbox"
+                  checked={stepFreeOnly}
+                  onChange={(e) => setStepFreeOnly(e.target.checked)}
+                  style={{ width: 16, height: 16, accentColor: "var(--primary-green)" }}
+                />
+                <Accessibility size={16} />
+                <span>Step-Free Elevator Route Only</span>
+              </label>
+            </div>
+
+            <button type="submit" className="button" style={{ padding: "11px 24px" }}>
+              Find My Route <ArrowRight size={16} />
+            </button>
+          </div>
+        </form>
       </section>
 
-      {/* Two Column Feature Section */}
-      <div className="two" style={{ marginTop: 20 }}>
-        {/* Left: Station Wayfinding Highlights */}
+      {/* Transit Quick-Actions Bar */}
+      <div style={{ marginTop: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+          <Link
+            href="/navigation?dest=platform-1"
+            className="station-strip"
+            style={{ textDecoration: "none" }}
+          >
+            <span className="platform-badge p1">P1</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>Find Platform 1</div>
+              <div className="muted" style={{ fontSize: 11 }}>PCMC • Purple Line</div>
+            </div>
+          </Link>
+
+          <Link
+            href="/navigation?dest=platform-2"
+            className="station-strip"
+            style={{ textDecoration: "none" }}
+          >
+            <span className="platform-badge p2">P2</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>Find Platform 2</div>
+              <div className="muted" style={{ fontSize: 11 }}>Swargate • Purple Line</div>
+            </div>
+          </Link>
+
+          <Link
+            href="/navigation?dest=exit-a"
+            className="station-strip"
+            style={{ textDecoration: "none" }}
+          >
+            <span className="platform-badge" style={{ background: "#C67D0A" }}>EX</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>Find Best Exit</div>
+              <div className="muted" style={{ fontSize: 11 }}>Bus Stand & Pune Rly Stn</div>
+            </div>
+          </Link>
+
+          <Link
+            href="/qr"
+            className="station-strip"
+            style={{ textDecoration: "none" }}
+          >
+            <span className="platform-badge" style={{ background: "#147D5A" }}>QR</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>Scan Station QR</div>
+              <div className="muted" style={{ fontSize: 11 }}>Pillar & counter codes</div>
+            </div>
+          </Link>
+
+          <Link
+            href="/lost"
+            className="station-strip"
+            style={{ textDecoration: "none", borderLeftColor: "var(--warning-red)" }}
+          >
+            <span className="platform-badge" style={{ background: "var(--warning-red)" }}>!</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--warning-red)" }}>I'm Lost</div>
+              <div className="muted" style={{ fontSize: 11 }}>Recovery & staff help</div>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Two Column Operational Info */}
+      <div className="two" style={{ marginTop: 22 }}>
+        {/* Left: Station Overview & Lines */}
         <section className="card">
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <MapPin size={20} color="#6950d5" />
-            <h2 style={{ margin: 0, fontSize: 18 }}>Pilot Station Wayfinding Points</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h2 style={{ fontSize: 18, margin: 0 }}>Civil Court Interchange Layout</h2>
+            <span className="pill green">Pilot Station Model</span>
           </div>
-          <p className="muted" style={{ fontSize: 13, marginBottom: 16 }}>
-            Grounded node points in <b>Pune Central (Civil Court)</b>:
+
+          <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
+            Civil Court is the major multi-level interchange station connecting Line 1 (PCMC – Swargate) and Line 2 (Vanaz – Ramwadi).
           </p>
 
           <div style={{ display: "grid", gap: 10 }}>
-            <div className="route">
-              <b>Platform 1 & 2 Boarding</b>
-              <br />
-              <span className="muted" style={{ fontSize: 13 }}>
-                Escalators, flight stairs, and Central Glass Lift to Level 1.
-              </span>
+            <div style={{ padding: "10px 12px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface-alt)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                <b style={{ fontSize: 13 }}>Level 0 — Street & Entrances</b>
+                <span className="pill">Ground</span>
+              </div>
+              <div className="muted" style={{ fontSize: 12 }}>
+                Gate 1 (North - Bus Stand Side) & Gate 2 (South - Rail Side with Step-Free Wheelchair Ramp).
+              </div>
             </div>
 
-            <div className="route">
-              <b>Gate 1 (North) & Gate 2 (South)</b>
-              <br />
-              <span className="muted" style={{ fontSize: 13 }}>
-                Step-free ramp at Gate 2; security baggage scan at concourse entrance.
-              </span>
+            <div style={{ padding: "10px 12px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface-alt)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                <b style={{ fontSize: 13 }}>Level C — Concourse & Fare Gates</b>
+                <span className="pill green">Accessible Central Lift</span>
+              </div>
+              <div className="muted" style={{ fontSize: 12 }}>
+                Customer Care counter, QR Ticket Vending Machines (TVMs), baggage scanners, and active green AFC fare gates.
+              </div>
             </div>
 
-            <div className="route">
-              <b>Verified Station Exits (A, B, C)</b>
-              <br />
-              <span className="muted" style={{ fontSize: 13 }}>
-                Exit A (MSRTC Bus Stand), Exit B (Pune Junction Footbridge), Exit C (Sancheti Hospital).
-              </span>
+            <div style={{ padding: "10px 12px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface-alt)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                <b style={{ fontSize: 13 }}>Level 1 — Elevated Platforms</b>
+                <span className="pill">Boarding</span>
+              </div>
+              <div className="muted" style={{ fontSize: 12 }}>
+                Platform 1 (Northbound to PCMC) via North Escalator/Lift; Platform 2 (Southbound to Swargate) via South Escalator/Lift.
+              </div>
             </div>
           </div>
 
-          <div style={{ marginTop: 18 }}>
-            <Link className="button outline" href="/navigation" style={{ width: "100%", justifyContent: "center" }}>
-              Explore Interactive Station Map
+          <div style={{ marginTop: 16 }}>
+            <Link href="/navigation" className="button secondary" style={{ width: "100%", justifyContent: "center" }}>
+              Open Interactive Station Schematic Diagram →
             </Link>
           </div>
         </section>
 
-        {/* Right: Lost Passenger Rescue & AI Companion */}
+        {/* Right: Station Assistance & Tools */}
         <div style={{ display: "grid", gap: 16 }}>
-          {/* Lost Passenger Rescue */}
-          <section className="card" style={{ borderLeft: "4px solid #7956e9" }}>
+          {/* Lost Assistance Banner */}
+          <section className="card card-alert-panel">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <ShieldAlert size={20} color="#7956e9" />
-              <h2 style={{ margin: 0, fontSize: 18 }}>Lost Passenger Rescue</h2>
+              <ShieldAlert size={18} color="var(--warning-red)" />
+              <h2 style={{ margin: 0, fontSize: 16, color: "var(--warning-red)" }}>Passenger Assistance</h2>
             </div>
-            <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
-              Disoriented or took the wrong staircase? Get instant recovery steps based on station landmarks.
+            <p className="muted" style={{ fontSize: 12, marginBottom: 12 }}>
+              If you took the wrong staircase or cannot find the elevator, follow our sequential recovery steps.
             </p>
-            <Link className="button secondary" href="/lost" style={{ width: "100%", justifyContent: "center" }}>
-              I'm Lost — Get Help Now
+            <Link href="/lost" className="button danger" style={{ width: "100%", justifyContent: "center", fontSize: 13 }}>
+              Open Station Assistance
             </Link>
           </section>
 
-          {/* AI Navigation Companion */}
-          <section className="card" style={{ borderLeft: "4px solid #0e8760" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <Bot size={20} color="#0e8760" />
-              <h2 style={{ margin: 0, fontSize: 18 }}>MetroMate AI Companion</h2>
-            </div>
-            <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
-              Ask questions about lifts, platforms, or exit choices without hallucinated facts.
+          {/* Multimodal Journey Planner Link */}
+          <section className="card">
+            <h2 style={{ fontSize: 16, margin: "0 0 6px" }}>Door-to-Door Journey Planner</h2>
+            <p className="muted" style={{ fontSize: 12, marginBottom: 12 }}>
+              Compare illustrative metro + walk vs first-mile auto options across Pune.
             </p>
-            <Link className="button secondary" href="/assistant" style={{ width: "100%", justifyContent: "center" }}>
-              Ask MetroMate AI
+            <Link href="/planner" className="button secondary" style={{ width: "100%", justifyContent: "center", fontSize: 13 }}>
+              Compare City Journeys →
+            </Link>
+          </section>
+
+          {/* Travel History & Expenses */}
+          <section className="card">
+            <h2 style={{ fontSize: 16, margin: "0 0 6px" }}>Travel History & Expenses</h2>
+            <p className="muted" style={{ fontSize: 12, marginBottom: 12 }}>
+              Log your daily metro fares and auto connections locally in your browser.
+            </p>
+            <Link href="/expenses" className="button outline" style={{ width: "100%", justifyContent: "center", fontSize: 13 }}>
+              View Travel Records
             </Link>
           </section>
         </div>
       </div>
 
-      {/* Secondary Tools Header */}
-      <div style={{ marginTop: 36, marginBottom: 12 }}>
-        <span className="eyebrow" style={{ color: "#64748b" }}>
-          Secondary Utilities
+      {/* Grounding Notice */}
+      <div className="notice" style={{ marginTop: 24, display: "flex", gap: 10, alignItems: "center" }}>
+        <Info size={18} color="#634707" style={{ flexShrink: 0 }} />
+        <span>
+          <b>Official Wayfinding Notice:</b> MetroMate is an independent wayfinding tool calibrated for demonstration using pilot station node coordinates. During station operations or construction maintenance, always heed overhead signage and instructions from uniformed Pune Metro personnel.
         </span>
-        <h3 style={{ fontSize: 18, margin: "4px 0" }}>Door-to-Door Journey & Commuter Spend</h3>
-        <p className="muted" style={{ fontSize: 13, margin: 0 }}>
-          Optional commute cost tracking and multi-modal transit comparison.
-        </p>
       </div>
-
-      {/* Secondary Cards Grid */}
-      <div className="grid">
-        <section className="card">
-          <span className="badge demo">Demo Route</span>
-          <p className="muted" style={{ marginTop: 8 }}>Lowest-Cost Door-to-Door</p>
-          <p className="stat">{money(42)}</p>
-          <p className="muted">Metro + walk • 48 min</p>
-          <Link href="/planner" style={{ fontSize: 13, color: "#6950d5", fontWeight: 700 }}>
-            Compare multimodal transit →
-          </Link>
-        </section>
-
-        <section className="card">
-          <span className="badge">Local Storage</span>
-          <p className="muted" style={{ marginTop: 8 }}>Recorded Commute Spend</p>
-          <p className="stat">{money(0)}</p>
-          <p className="muted">Track your daily metro & bus expenses</p>
-          <Link href="/expenses" style={{ fontSize: 13, color: "#6950d5", fontWeight: 700 }}>
-            Manage expenses →
-          </Link>
-        </section>
-
-        <section className="card">
-          <span className="badge demo">Estimated Demo</span>
-          <p className="muted" style={{ marginTop: 8 }}>Potential Monthly Saving</p>
-          <p className="stat mint">{money(54)}</p>
-          <p className="muted">Metro commute vs cab/auto</p>
-          <Link href="/analytics" style={{ fontSize: 13, color: "#07875e", fontWeight: 700 }}>
-            View spend analytics →
-          </Link>
-        </section>
-      </div>
-    </>
+    </div>
   );
 }

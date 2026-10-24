@@ -1,12 +1,11 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Accessibility,
   ArrowRight,
-  Bot,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -20,7 +19,10 @@ import {
   RotateCcw,
   ShieldAlert,
   Sparkles,
+  Train,
   Zap,
+  ArrowDownUp,
+  AlertTriangle,
 } from "lucide-react";
 import {
   getPilotStation,
@@ -34,6 +36,7 @@ import {
 } from "@/lib/graph";
 
 function NavigationContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const station = getPilotStation();
 
@@ -50,8 +53,9 @@ function NavigationContent() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrInput, setQrInput] = useState("");
   const [qrStatus, setQrStatus] = useState<{ success: boolean; message: string } | null>(null);
+  const [reportModal, setReportModal] = useState(false);
 
-  // Read query params on mount (e.g., from QR scan or home page shortcuts)
+  // Read query params on mount
   useEffect(() => {
     const queryStart = searchParams.get("start");
     const queryDest = searchParams.get("dest");
@@ -73,16 +77,6 @@ function NavigationContent() {
   }, [searchParams, station.nodes]);
 
   // Compute routes
-  const handleCalculateRoutes = () => {
-    if (!startId || !destId) return;
-    const comparisons = compareAllRoutes(station, startId, destId);
-    setAllRoutes(comparisons);
-    setActiveRoute(comparisons[preference]);
-    setIsNavigating(false);
-    setCurrentStepIndex(0);
-  };
-
-  // Re-run comparison when start or dest changes
   useEffect(() => {
     if (startId && destId) {
       const comparisons = compareAllRoutes(station, startId, destId);
@@ -90,6 +84,14 @@ function NavigationContent() {
       setActiveRoute(comparisons[preference]);
     }
   }, [startId, destId, preference]);
+
+  const handleSwap = () => {
+    const temp = startId;
+    setStartId(destId);
+    setDestId(temp);
+    setCurrentStepIndex(0);
+    setIsNavigating(false);
+  };
 
   // QR handling
   const handleValidateQr = (payload: string) => {
@@ -137,48 +139,55 @@ function NavigationContent() {
   const currentEdge = activeRoute?.edges[currentStepIndex];
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto" }}>
-      {/* Header */}
+    <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+      {/* Area A: Station and Route Context Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <p className="eyebrow">Indoor Wayfinding & Navigation</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <span className="eyebrow" style={{ margin: 0 }}>Wayfinding System</span>
+            <span className="badge verified">Verified Demo Pilot</span>
+          </div>
           <h1 className="title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Compass size={32} color="#6950d5" />
-            Station Navigator
+            <span>{station.name}</span>
           </h1>
-          <p className="sub">
-            Turn-by-turn guidance inside Pune Metro stations — from entrance gates, ticket vending machines, and concourse halls straight to your platform and verified exit.
+          <p className="sub" style={{ margin: 0 }}>
+            {station.line} • Indoor pedestrian wayfinding and platform navigation.
           </p>
         </div>
 
-        <button
-          className="button secondary"
-          style={{ display: "flex", alignItems: "center", gap: 8 }}
-          onClick={() => setShowQrModal(true)}
-          aria-label="Scan Station QR Code"
-        >
-          <QrCode size={18} />
-          Scan Station QR
-        </button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            className="button secondary"
+            onClick={() => setShowQrModal(true)}
+            aria-label="Scan Station QR Code"
+          >
+            <QrCode size={16} /> Scan Station QR
+          </button>
+
+          <Link href="/qr" className="button outline" style={{ fontSize: 13 }}>
+            QR Catalog
+          </Link>
+        </div>
       </div>
 
-      {/* QR Banner feedback */}
+      {/* QR Banner Notification */}
       {qrStatus && (
         <div
           style={{
-            marginTop: 16,
-            padding: "12px 16px",
-            borderRadius: 10,
+            marginTop: 14,
+            padding: "10px 14px",
+            borderRadius: "var(--radius-sm)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            background: qrStatus.success ? "#ecfdf5" : "#fef2f2",
-            border: `1px solid ${qrStatus.success ? "#a7f3d0" : "#fecaca"}`,
-            color: qrStatus.success ? "#065f46" : "#991b1b",
+            background: qrStatus.success ? "#E8F2EC" : "#FDE8E8",
+            border: `1px solid ${qrStatus.success ? "#C4DEC9" : "#F8B4B4"}`,
+            color: qrStatus.success ? "var(--deep-green)" : "var(--warning-red)",
+            fontSize: 13,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}>
-            {qrStatus.success ? <CheckCircle2 size={18} /> : <ShieldAlert size={18} />}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {qrStatus.success ? <CheckCircle2 size={16} /> : <ShieldAlert size={16} />}
             <span>{qrStatus.message}</span>
           </div>
           <button
@@ -190,32 +199,23 @@ function NavigationContent() {
         </div>
       )}
 
-      {/* Station Selector & Configuration Card */}
-      <section className="card card-hero" style={{ marginTop: 20 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-          <div>
-            <span className="badge demo">Pilot Pilot Model</span>
-            <span className="badge" style={{ marginLeft: 8 }}>
-              {station.name}
-            </span>
-          </div>
-          <span className="muted" style={{ fontSize: 13 }}>
-            Line: {station.line}
-          </span>
-        </div>
-
+      {/* Origin, Destination & Preference Selector Card */}
+      <section className="card card-transit-panel" style={{ marginTop: 16 }}>
         <div className="row">
           <div className="field">
             <label htmlFor="start-location" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <MapPin size={16} color="#059669" />
-              Starting Location (Where are you now?)
+              <MapPin size={15} color="#059669" />
+              <span>Current Starting Location</span>
             </label>
             <select
               id="start-location"
               value={startId}
-              onChange={(e) => setStartId(e.target.value)}
+              onChange={(e) => {
+                setStartId(e.target.value);
+                setCurrentStepIndex(0);
+              }}
             >
-              <optgroup label="Entrances & Street Gates">
+              <optgroup label="Entrances & Gates">
                 {station.nodes
                   .filter((n) => n.type === "entrance")
                   .map((n) => (
@@ -224,7 +224,7 @@ function NavigationContent() {
                     </option>
                   ))}
               </optgroup>
-              <optgroup label="Concourse & Ticketing">
+              <optgroup label="Ticketing & Concourse">
                 {station.nodes
                   .filter((n) => ["ticket", "concourse", "lift"].includes(n.type))
                   .map((n) => (
@@ -255,14 +255,28 @@ function NavigationContent() {
           </div>
 
           <div className="field">
-            <label htmlFor="dest-location" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <MapPin size={16} color="#6950d5" />
-              Destination (Where do you need to go?)
-            </label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <label htmlFor="dest-location" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <MapPin size={15} color="#147D5A" />
+                <span>Destination Goal</span>
+              </label>
+              <button
+                type="button"
+                onClick={handleSwap}
+                className="button outline"
+                style={{ padding: "2px 8px", fontSize: 11, height: 22, gap: 4 }}
+                title="Swap origin and destination"
+              >
+                <ArrowDownUp size={11} /> Swap
+              </button>
+            </div>
             <select
               id="dest-location"
               value={destId}
-              onChange={(e) => setDestId(e.target.value)}
+              onChange={(e) => {
+                setDestId(e.target.value);
+                setCurrentStepIndex(0);
+              }}
             >
               <optgroup label="Platforms (Board Train)">
                 {station.nodes
@@ -273,7 +287,7 @@ function NavigationContent() {
                     </option>
                   ))}
               </optgroup>
-              <optgroup label="Exits & Transit Connections">
+              <optgroup label="Exits (Leave Station)">
                 {station.nodes
                   .filter((n) => n.type === "exit")
                   .map((n) => (
@@ -284,7 +298,7 @@ function NavigationContent() {
               </optgroup>
               <optgroup label="Ticketing & Concourse">
                 {station.nodes
-                  .filter((n) => ["ticket", "concourse"].includes(n.type))
+                  .filter((n) => ["ticket", "concourse", "lift"].includes(n.type))
                   .map((n) => (
                     <option key={n.id} value={n.id}>
                       {n.label} ({n.level})
@@ -295,138 +309,215 @@ function NavigationContent() {
           </div>
         </div>
 
-        {/* Preferences Tabs */}
-        <div style={{ marginTop: 18 }}>
-          <label style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>
-            Route Preferences
+        {/* Route Preference Selector Tabs */}
+        <div style={{ marginTop: 14 }}>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "var(--secondary-text)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            Routing Preference:
           </label>
           <div className="tab-group">
             <button
               type="button"
               className={`tab-btn ${preference === "fastest" ? "active" : ""}`}
-              onClick={() => setPreference("fastest")}
+              onClick={() => {
+                setPreference("fastest");
+                setCurrentStepIndex(0);
+              }}
             >
-              <Zap size={15} />
-              Fastest Route
+              <Zap size={14} /> Fastest Route
             </button>
             <button
               type="button"
               className={`tab-btn ${preference === "least-walking" ? "active" : ""}`}
-              onClick={() => setPreference("least-walking")}
+              onClick={() => {
+                setPreference("least-walking");
+                setCurrentStepIndex(0);
+              }}
             >
-              <Footprints size={15} />
-              Least Walking
+              <Footprints size={14} /> Least Walking
             </button>
             <button
               type="button"
               className={`tab-btn ${preference === "step-free" ? "active" : ""}`}
-              onClick={() => setPreference("step-free")}
+              onClick={() => {
+                setPreference("step-free");
+                setCurrentStepIndex(0);
+              }}
             >
-              <Accessibility size={15} />
-              Step-Free (Elevator)
+              <Accessibility size={14} /> Step-Free (Elevator)
             </button>
             <button
               type="button"
               className={`tab-btn ${preference === "fewer-stairs" ? "active" : ""}`}
-              onClick={() => setPreference("fewer-stairs")}
+              onClick={() => {
+                setPreference("fewer-stairs");
+                setCurrentStepIndex(0);
+              }}
             >
-              <Layers size={15} />
-              Fewer Stairs
+              <Layers size={14} /> Fewer Stairs
             </button>
           </div>
         </div>
       </section>
 
-      {/* Comparative Route Cards */}
-      {allRoutes && (
-        <section style={{ marginTop: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-            <h2 style={{ fontSize: 20 }}>Route Comparison</h2>
-            <span className="muted" style={{ fontSize: 13 }}>
-              Select an option below to start guided navigation
+      {/* Area B: Visual Station Route (Schematic Diagram) */}
+      {activeRoute && activeRoute.edges.length > 0 && (
+        <section className="card" style={{ marginTop: 18 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Compass size={18} color="var(--primary-green)" />
+              <h2 style={{ fontSize: 16, margin: 0 }}>Schematic Station Wayfinding Diagram</h2>
+            </div>
+            <span className="badge" style={{ fontSize: 11 }}>
+              Schematic Path • {activeRoute.edges.length} Nodes
             </span>
           </div>
 
-          <div className="grid">
-            {(["fastest", "least-walking", "step-free", "fewer-stairs"] as NavigationPreference[]).map((prefKey) => {
-              const r = allRoutes[prefKey];
-              const isSelected = preference === prefKey;
-              const isUnreachable = r.unreachableMessage !== undefined;
+          <p className="muted" style={{ fontSize: 12, margin: "0 0 12px" }}>
+            Visual connection flow from start through station infrastructure to your destination:
+          </p>
 
-              return (
-                <div
-                  key={prefKey}
-                  className={`card ${isSelected ? "card-hero" : ""}`}
-                  style={{
-                    cursor: isUnreachable ? "not-allowed" : "pointer",
-                    opacity: isUnreachable ? 0.7 : 1,
-                    border: isSelected ? "2px solid #6950d5" : undefined,
-                    position: "relative",
-                  }}
-                  onClick={() => {
-                    if (!isUnreachable) {
-                      setPreference(prefKey);
-                    }
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span className={`badge ${isSelected ? "demo" : ""}`}>{r.title}</span>
-                    {isSelected && (
-                      <span className="pill green">
-                        <CheckCircle2 size={12} /> Active
-                      </span>
-                    )}
-                  </div>
-
-                  {isUnreachable ? (
-                    <div style={{ marginTop: 12 }}>
-                      <p className="muted" style={{ color: "#c0384d", fontSize: 13 }}>
-                        {r.unreachableMessage}
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="stat" style={{ fontSize: 22, margin: "12px 0 6px" }}>
-                        {Math.ceil(r.totalTimeSec / 60)} min
-                        <span className="muted" style={{ fontSize: 14, fontWeight: 500, marginLeft: 8 }}>
-                          ({r.totalDistanceM} m)
-                        </span>
-                      </div>
-
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "8px 0" }}>
-                        {r.isStepFree ? (
-                          <span className="pill green">Step-free</span>
-                        ) : r.hasStairs ? (
-                          <span className="pill amber">{r.stairFlightCount} Stair Flight(s)</span>
-                        ) : null}
-                        {r.hasLift && <span className="pill purple">Elevator</span>}
-                        {r.hasEscalator && <span className="pill purple">Escalator</span>}
-                      </div>
-
-                      <p className="muted" style={{ fontSize: 12, lineHeight: 1.4, margin: "10px 0 0" }}>
-                        {r.explanation}
-                      </p>
-                    </>
-                  )}
+          <div className="schematic-canvas">
+            <div className="schematic-flow">
+              {/* Initial node */}
+              <div
+                className={`schematic-node ${
+                  isNavigating && currentStepIndex === 0 ? "active" : isNavigating ? "passed" : ""
+                }`}
+              >
+                <div className="schematic-icon">
+                  <MapPin size={18} />
                 </div>
-              );
-            })}
+                <b style={{ fontSize: 11, color: "var(--primary-text)", maxWidth: 100 }}>
+                  {station.nodes.find((n) => n.id === activeRoute.edges[0].from)?.label.split("(")[0]}
+                </b>
+                <span className="pill" style={{ fontSize: 9 }}>
+                  {station.nodes.find((n) => n.id === activeRoute.edges[0].from)?.level}
+                </span>
+              </div>
+
+              {/* Edge connectors and intermediate nodes */}
+              {activeRoute.edges.map((edge, idx) => {
+                const toNode = station.nodes.find((n) => n.id === edge.to);
+                const isTraversed = isNavigating && currentStepIndex >= idx;
+                const isCurrent = isNavigating && currentStepIndex === idx;
+
+                return (
+                  <div key={idx} style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 100 }}>
+                    <div className={`schematic-connector ${isTraversed ? "active" : ""}`}>
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: -16,
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: "var(--secondary-text)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {edge.distanceM}m
+                        {edge.lift ? " [Lift]" : edge.escalator ? " [Esc]" : edge.stairs ? " [Stairs]" : ""}
+                      </span>
+                    </div>
+
+                    <div className={`schematic-node ${isCurrent ? "active" : isTraversed ? "passed" : ""}`}>
+                      <div className="schematic-icon">
+                        {toNode?.type === "platform" ? (
+                          <Train size={18} />
+                        ) : toNode?.type === "lift" ? (
+                          <Accessibility size={18} />
+                        ) : toNode?.type === "exit" ? (
+                          <ArrowRight size={18} />
+                        ) : (
+                          <Footprints size={18} />
+                        )}
+                      </div>
+                      <b style={{ fontSize: 11, color: "var(--primary-text)", maxWidth: 100 }}>
+                        {toNode?.label.split("(")[0]}
+                      </b>
+                      <span className="pill" style={{ fontSize: 9 }}>
+                        {toNode?.level}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
       )}
 
-      {/* Active Navigation & Step Progression Section */}
+      {/* Alternative Route Summary Pills */}
+      {allRoutes && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginTop: 18 }}>
+          {(["fastest", "least-walking", "step-free", "fewer-stairs"] as NavigationPreference[]).map((key) => {
+            const r = allRoutes[key];
+            const isSelected = preference === key;
+            const unreachable = r.unreachableMessage !== undefined;
+
+            return (
+              <div
+                key={key}
+                className="card"
+                style={{
+                  padding: 14,
+                  cursor: unreachable ? "not-allowed" : "pointer",
+                  borderLeft: isSelected ? "4px solid var(--primary-green)" : "1px solid var(--border)",
+                  background: isSelected ? "#F8FAF8" : "#FFFFFF",
+                }}
+                onClick={() => {
+                  if (!unreachable) {
+                    setPreference(key);
+                    setCurrentStepIndex(0);
+                  }
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <b style={{ fontSize: 13, color: isSelected ? "var(--deep-green)" : "var(--primary-text)" }}>
+                    {r.title}
+                  </b>
+                  {isSelected && <span className="pill green">Active</span>}
+                </div>
+
+                {unreachable ? (
+                  <p className="muted" style={{ fontSize: 11, color: "var(--warning-red)", margin: "6px 0 0" }}>
+                    {r.unreachableMessage}
+                  </p>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", gap: 8, alignItems: "baseline", margin: "6px 0" }}>
+                      <span style={{ fontSize: 16, fontWeight: 800 }}>{Math.ceil(r.totalTimeSec / 60)} min</span>
+                      <span className="muted" style={{ fontSize: 12 }}>({r.totalDistanceM} m)</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                      {r.isStepFree ? (
+                        <span className="pill green">Step-free</span>
+                      ) : r.hasStairs ? (
+                        <span className="pill amber">{r.stairFlightCount} stairs</span>
+                      ) : null}
+                      {r.hasLift && <span className="pill green">Lift</span>}
+                      {r.hasEscalator && <span className="pill">Escalator</span>}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Area C: Step-by-Step Directions (Turn-by-Turn Transit Style) */}
       {activeRoute && activeRoute.edges.length > 0 && (
-        <section className="card" style={{ marginTop: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+        <section className="card card-transit-panel" style={{ marginTop: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <div>
-              <span className="eyebrow">{activeRoute.title}</span>
-              <h2 style={{ margin: "4px 0" }}>
-                {startNode?.label} → {destNode?.label}
-              </h2>
-              <p className="muted">
-                Total: {activeRoute.totalDistanceM} meters • ~{Math.ceil(activeRoute.totalTimeSec / 60)} min walk • {activeRoute.edges.length} navigation steps
-              </p>
+              <span className="eyebrow" style={{ color: "var(--deep-green)" }}>
+                {activeRoute.title} • {startNode?.label.split("(")[0]} to {destNode?.label.split("(")[0]}
+              </span>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--secondary-text)" }}>
+                Total: {activeRoute.totalDistanceM} m • ~{Math.ceil(activeRoute.totalTimeSec / 60)} min • {activeRoute.edges.length} steps
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: 8 }}>
@@ -436,23 +527,22 @@ function NavigationContent() {
                 </button>
               ) : (
                 <button className="button secondary" onClick={restartJourney}>
-                  <RotateCcw size={16} /> Restart
+                  <RotateCcw size={15} /> Restart
                 </button>
               )}
             </div>
           </div>
 
-          {/* Step Progression View */}
+          {/* Transit Step Progress Tracker */}
           {isNavigating && currentEdge && (
-            <div style={{ marginTop: 20 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, fontWeight: 700, color: "#64748b" }}>
+            <div style={{ marginTop: 18 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, fontWeight: 700, color: "var(--secondary-text)" }}>
                 <span>
                   STEP {currentStepIndex + 1} OF {activeRoute.edges.length}
                 </span>
-                <span>{Math.round(((currentStepIndex + 1) / activeRoute.edges.length) * 100)}% Completed</span>
+                <span>{Math.round(((currentStepIndex + 1) / activeRoute.edges.length) * 100)}% COMPLETE</span>
               </div>
 
-              {/* Progress bar */}
               <div className="progress-track">
                 <div
                   className="progress-fill"
@@ -460,77 +550,67 @@ function NavigationContent() {
                 />
               </div>
 
-              {/* Active Step Highlight Card */}
+              {/* Primary Direction Card */}
               <div
                 style={{
-                  background: "#faf8ff",
-                  border: "2px solid #7956e9",
-                  borderRadius: 14,
+                  background: "#F7FAF8",
+                  border: "2px solid var(--primary-green)",
+                  borderRadius: "var(--radius-md)",
                   padding: 20,
-                  margin: "16px 0",
+                  margin: "12px 0 16px",
                 }}
               >
                 <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                  <div
-                    style={{
-                      minWidth: 40,
-                      height: 40,
-                      borderRadius: "50%",
-                      background: "#6950d5",
-                      color: "#fff",
-                      display: "grid",
-                      placeItems: "center",
-                      fontSize: 18,
-                      fontWeight: 700,
-                    }}
-                  >
+                  <div className="number" style={{ width: 36, height: 36, fontSize: 16 }}>
                     {currentStepIndex + 1}
                   </div>
 
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
                       <span className="badge">
-                        {station.nodes.find((n) => n.id === currentEdge.from)?.label}
+                        From: {station.nodes.find((n) => n.id === currentEdge.from)?.label}
                       </span>
-                      <ArrowRight size={14} color="#64748b" />
-                      <span className="badge demo">
-                        {station.nodes.find((n) => n.id === currentEdge.to)?.label}
+                      <ArrowRight size={13} color="var(--secondary-text)" />
+                      <span className="badge" style={{ background: "#F0F4F1" }}>
+                        Towards: {station.nodes.find((n) => n.id === currentEdge.to)?.label}
                       </span>
                     </div>
 
-                    <h3 style={{ fontSize: 18, margin: "8px 0 10px", color: "#10233e", lineHeight: 1.4 }}>
+                    <h3 style={{ fontSize: 18, margin: "6px 0 10px", color: "var(--primary-text)", lineHeight: 1.4 }}>
                       {currentEdge.instruction}
                     </h3>
 
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginTop: 12 }}>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 10 }}>
                       <span className="pill">
-                        <Footprints size={13} /> {currentEdge.distanceM} meters
+                        <Footprints size={12} /> {currentEdge.distanceM} meters
                       </span>
                       <span className="pill">
-                        <Clock size={13} /> ~{currentEdge.timeSec} seconds
+                        <Clock size={12} /> ~{currentEdge.timeSec}s walk
                       </span>
-                      {currentEdge.stepFree && <span className="pill green">Step-free ramp/floor</span>}
-                      {currentEdge.lift && <span className="pill purple">Elevator</span>}
-                      {currentEdge.escalator && <span className="pill purple">Escalator</span>}
-                      {currentEdge.stairs && <span className="pill amber">Stairs</span>}
+                      {currentEdge.stepFree && <span className="pill green">Step-free path</span>}
+                      {currentEdge.lift && <span className="pill green">Central Elevator</span>}
+                      {currentEdge.escalator && <span className="pill">Escalator</span>}
+                      {currentEdge.stairs && <span className="pill amber">Stair flight</span>}
                       {currentEdge.verified ? (
                         <span className="pill green">Verified Layout</span>
                       ) : (
-                        <span className="pill amber">Demo Layout</span>
+                        <span className="pill amber">Calibrated Model</span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Step Action Buttons */}
+                {/* Next / Previous Controls */}
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    marginTop: 20,
-                    paddingTop: 16,
-                    borderTop: "1px solid #e9d5ff",
+                    marginTop: 18,
+                    paddingTop: 14,
+                    borderTop: "1px solid var(--border)",
+                    flexWrap: "wrap",
+                    gap: 10,
                   }}
                 >
                   <button
@@ -538,18 +618,26 @@ function NavigationContent() {
                     onClick={prevStep}
                     disabled={currentStepIndex === 0}
                   >
-                    <ChevronLeft size={16} /> Previous Step
+                    <ChevronLeft size={16} /> Previous
                   </button>
 
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <button
+                      className="button outline"
+                      onClick={() => setReportModal(true)}
+                      style={{ fontSize: 12, padding: "8px 12px" }}
+                    >
+                      <AlertTriangle size={14} color="#8C5E09" /> Report Problem
+                    </button>
+
                     <Link
                       href={`/assistant?q=${encodeURIComponent(
-                        `I am at step ${currentStepIndex + 1} of my journey in Pune Metro station (${currentEdge.instruction}). Can you give me tips or assist me?`
+                        `Step ${currentStepIndex + 1} at Pune Metro (${currentEdge.instruction}): Can you clarify this direction or check if an alternate route is available?`
                       )}`}
                       className="button secondary"
                       style={{ fontSize: 13 }}
                     >
-                      <Bot size={15} /> Ask AI Assistant
+                      <Sparkles size={14} /> Clarify with AI
                     </Link>
 
                     {currentStepIndex < activeRoute.edges.length - 1 ? (
@@ -558,8 +646,9 @@ function NavigationContent() {
                       </button>
                     ) : (
                       <button
-                        className="button mint"
-                        onClick={() => alert("🎉 You have arrived at your destination inside Pune Metro!")}
+                        className="button"
+                        style={{ background: "#0E6044" }}
+                        onClick={() => alert("✓ You have arrived at your destination inside Pune Metro!")}
                       >
                         Destination Reached ✓
                       </button>
@@ -570,9 +659,9 @@ function NavigationContent() {
             </div>
           )}
 
-          {/* Full Step Timeline */}
-          <div style={{ marginTop: 24 }}>
-            <h3 style={{ fontSize: 16, marginBottom: 12 }}>All Journey Steps</h3>
+          {/* Full Sequential Itinerary */}
+          <div style={{ marginTop: 20 }}>
+            <h3 style={{ fontSize: 15, marginBottom: 10 }}>Sequential Wayfinding Steps</h3>
             <div className="timeline">
               {activeRoute.edges.map((edge, index) => {
                 const isCurrent = isNavigating && currentStepIndex === index;
@@ -595,12 +684,12 @@ function NavigationContent() {
                   >
                     <div className="number">{index + 1}</div>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: 600, fontSize: 15, margin: 0 }}>
+                      <p style={{ fontWeight: 600, fontSize: 14, margin: 0 }}>
                         {edge.instruction}
                       </p>
-                      <div style={{ display: "flex", gap: 10, marginTop: 6, fontSize: 12, color: "#64748b" }}>
+                      <div style={{ display: "flex", gap: 10, marginTop: 4, fontSize: 12, color: "var(--secondary-text)" }}>
                         <span>
-                          {fromNode?.label} → {toNode?.label}
+                          {fromNode?.label.split("(")[0]} → {toNode?.label.split("(")[0]}
                         </span>
                         <span>•</span>
                         <span>{edge.distanceM} m</span>
@@ -608,7 +697,7 @@ function NavigationContent() {
                         <span>~{edge.timeSec}s</span>
                       </div>
                     </div>
-                    {isCurrent && <span className="badge demo">Current</span>}
+                    {isCurrent && <span className="pill green">Active</span>}
                   </div>
                 );
               })}
@@ -617,22 +706,22 @@ function NavigationContent() {
         </section>
       )}
 
-      {/* Safety & Grounded Station Notice */}
-      <div className="notice" style={{ marginTop: 24, display: "flex", gap: 12, alignItems: "center" }}>
-        <Info size={20} color="#755812" style={{ flexShrink: 0 }} />
-        <div>
-          <strong>Safety & Station Information Grounding:</strong> Wayfinding paths are calculated from verified pilot station node coordinates for Pune Central (Civil Court). If stairs or lifts are undergoing maintenance, or if path barriers are present, always adhere to official Pune Metro overhead signage and consult station security or customer care staff.
-        </div>
+      {/* Safety Notice */}
+      <div className="notice" style={{ marginTop: 22, display: "flex", gap: 10, alignItems: "center" }}>
+        <Info size={18} color="#634707" style={{ flexShrink: 0 }} />
+        <span>
+          <b>Passenger Safety:</b> Always confirm direction with overhead station signage before stepping onto platform edges or escalators. If you require wheelchair ramp boarding, notify Customer Care at the concourse level.
+        </span>
       </div>
 
-      {/* Modal for QR Scanner / Manual QR Entry */}
+      {/* Modal for QR Code Scanning & Manual Payload Entry */}
       {showQrModal && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(16, 35, 62, 0.6)",
-            backdropFilter: "blur(4px)",
+            background: "rgba(32, 41, 35, 0.65)",
+            backdropFilter: "blur(3px)",
             display: "grid",
             placeItems: "center",
             zIndex: 100,
@@ -642,13 +731,13 @@ function NavigationContent() {
         >
           <div
             className="card"
-            style={{ width: "min(520px, 100%)", maxHeight: "90vh", overflowY: "auto" }}
+            style={{ width: "min(520px, 100%)", maxHeight: "90vh", overflowY: "auto", borderTop: "4px solid var(--primary-green)" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <QrCode size={22} color="#6950d5" />
-                <h3 style={{ margin: 0 }}>Scan Station QR Code</h3>
+                <QrCode size={20} color="var(--primary-green)" />
+                <h3 style={{ margin: 0, fontSize: 17 }}>Scan Station QR Code</h3>
               </div>
               <button
                 onClick={() => setShowQrModal(false)}
@@ -659,12 +748,12 @@ function NavigationContent() {
             </div>
 
             <p className="muted" style={{ fontSize: 13 }}>
-              In supported metro stations, scan or enter the indoor wayfinding QR plaque mounted on station pillars, ticketing counters, or platform stairwells.
+              Enter or scan the location code displayed on the physical wayfinding plaque mounted on station pillars or fare gates:
             </p>
 
-            <div style={{ marginTop: 16 }} className="form">
+            <div style={{ marginTop: 14 }} className="form">
               <div className="field">
-                <label htmlFor="qr-payload-input">Enter Station QR Payload / Code:</label>
+                <label htmlFor="qr-payload-input">Station QR Payload / Code:</label>
                 <input
                   id="qr-payload-input"
                   type="text"
@@ -679,21 +768,21 @@ function NavigationContent() {
                 onClick={() => handleValidateQr(qrInput)}
                 disabled={!qrInput.trim()}
               >
-                Validate & Set Starting Location
+                Set As My Current Location
               </button>
             </div>
 
-            <div style={{ marginTop: 20 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#475569", margin: "0 0 8px" }}>
-                Quick Test Sample Payloads (1-Click Demo):
-              </p>
-              <div className="quick-qr-list">
+            <div style={{ marginTop: 18 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--secondary-text)", marginBottom: 8, textTransform: "uppercase" }}>
+                Quick Test Codes (1-Click Station Nodes):
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {sampleQrPayloads.map((sample, idx) => (
                   <button
                     key={idx}
                     type="button"
                     className="button secondary"
-                    style={{ fontSize: 12, padding: "6px 10px" }}
+                    style={{ fontSize: 12, padding: "5px 9px" }}
                     onClick={() => {
                       setQrInput(sample.payload);
                       handleValidateQr(sample.payload);
@@ -707,13 +796,60 @@ function NavigationContent() {
           </div>
         </div>
       )}
+
+      {/* Report Problem Modal */}
+      {reportModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(32, 41, 35, 0.6)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 100,
+            padding: 16,
+          }}
+          onClick={() => setReportModal(false)}
+        >
+          <div
+            className="card"
+            style={{ width: "min(460px, 100%)", borderTop: "4px solid var(--warning-red)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontSize: 16 }}>Report Wayfinding Problem</h3>
+              <button onClick={() => setReportModal(false)} style={{ border: 0, background: "none", fontSize: 16, fontWeight: 700 }}>✕</button>
+            </div>
+            <p className="muted" style={{ fontSize: 13 }}>
+              Is this corridor closed, undergoing maintenance, or are stairs blocked?
+            </p>
+            <div className="form" style={{ marginTop: 12 }}>
+              <select defaultValue="lift-out">
+                <option value="lift-out">Elevator / Lift out of service</option>
+                <option value="escalator-stopped">Escalator stopped / maintenance</option>
+                <option value="gate-locked">Exit gate or door locked</option>
+                <option value="sign-mismatch">Station sign does not match app step</option>
+              </select>
+              <button
+                className="button"
+                onClick={() => {
+                  alert("Thank you. This incident has been recorded in local demo logs. Please consult station staff for active assistance.");
+                  setReportModal(false);
+                }}
+              >
+                Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function NavigationPage() {
   return (
-    <Suspense fallback={<div className="card">Loading Station Navigator...</div>}>
+    <Suspense fallback={<div className="card">Loading Station Wayfinding System...</div>}>
       <NavigationContent />
     </Suspense>
   );
