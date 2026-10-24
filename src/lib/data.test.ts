@@ -1,0 +1,5 @@
+import { describe, expect, it } from "vitest";
+import { average, byMode, demoRoutes, expensesCsv, rankRoutes, total, type Expense } from "./data";
+const sample:Expense[]=[{id:"1",title:"Ride",amount:42,category:"Metro",date:"2026-10-24"},{id:"2",title:"Auto",amount:80,category:"Auto",date:"2026-10-24",note:'a "quoted" note'}];
+describe("journey ranking",()=>{it("ranks the cheapest result",()=>expect(rankRoutes(demoRoutes,"cheapest")[0].id).toBe("walk"));it("ranks least walking",()=>expect(rankRoutes(demoRoutes,"least-walking")[0].id).toBe("fast"));});
+describe("expense calculations",()=>{it("calculates totals and averages",()=>{expect(total(sample)).toBe(122);expect(average(sample)).toBe(61);expect(byMode(sample).Metro).toBe(42)});it("handles empty input",()=>expect(average([])).toBe(0));it("escapes CSV",()=>expect(expensesCsv(sample)).toContain('"a ""quoted"" note"'));});

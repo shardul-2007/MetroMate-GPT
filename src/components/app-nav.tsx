@@ -1,0 +1,5 @@
+"use client";
+import { Bot, ChartNoAxesCombined, House, Map, ReceiptIndianRupee, Settings, Siren } from "lucide-react";
+import Link from "next/link"; import { usePathname } from "next/navigation";
+const links=[['/', 'Overview', House],['/planner','Planner',Map],['/lost','I�m lost',Siren],['/expenses','Expenses',ReceiptIndianRupee],['/analytics','Analytics',ChartNoAxesCombined],['/assistant','GPT Assistant',Bot],['/settings','Settings',Settings]] as const;
+export function AppNav(){const path=usePathname();return <nav className="nav"><div className="brand">Metro<span>Mate</span> GPT</div><p className="tag">Beyond the metro map</p>{links.map(([href,label,Icon])=><Link key={href} href={href} className={`${path===href?'active':''} ${href==='/lost'?'lost-link':''}`}><Icon size={17}/>{label}</Link>)}</nav>}

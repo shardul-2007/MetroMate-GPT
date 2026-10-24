@@ -1,0 +1,15 @@
+export type Mode="Metro"|"Auto"|"Bus"|"Walk";
+export type Expense={id:string;title:string;amount:number;category:Mode;date:string;note?:string};
+export type Route={id:string;name:string;cost:number;duration:number;walking:number;transfers:number;detail:string};
+export type Preference="balanced"|"cheapest"|"fastest"|"least-walking";
+export const demoRoutes:Route[]=[{id:"balanced",name:"Metro + walk",cost:42,duration:48,walking:.7,transfers:1,detail:"Illustrative metro fare and walking estimate; not live Pune Metro routing."},{id:"fast",name:"Metro + auto",cost:96,duration:35,walking:.2,transfers:1,detail:"Illustrative metro + first/last-mile auto estimate; not live Pune Metro routing."},{id:"budget",name:"Bus",cost:28,duration:62,walking:.5,transfers:0,detail:"Illustrative bus estimate; not live Pune transit routing."},{id:"walk",name:"Walk",cost:0,duration:115,walking:8.1,transfers:0,detail:"Illustrative walking estimate; route safety and accessibility are unknown."}];
+export const money=(value:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(value);
+export const isExpense=(value:unknown):value is Expense=>typeof value==="object"&&value!==null&&typeof (value as Expense).id==="string"&&typeof (value as Expense).title==="string"&&Number.isFinite((value as Expense).amount)&&(value as Expense).amount>0&&typeof (value as Expense).date==="string";
+export const getExpenses=():Expense[]=>{try{const stored=JSON.parse(localStorage.getItem("metromate-expenses")||"[]");return Array.isArray(stored)?stored.filter(isExpense):[]}catch{return[]}};
+export const saveExpenses=(items:Expense[])=>localStorage.setItem("metromate-expenses",JSON.stringify(items));
+export const total=(items:Expense[])=>items.reduce((sum,x)=>sum+x.amount,0);
+export const average=(items:Expense[])=>items.length?total(items)/items.length:0;
+export const byMode=(items:Expense[])=>items.reduce<Partial<Record<Mode,number>>>((acc,x)=>{acc[x.category]=(acc[x.category]||0)+x.amount;return acc},{});
+export const rankRoutes=(routes:Route[],preference:Preference)=>[...routes].sort((a,b)=>{if(preference==="cheapest")return a.cost-b.cost;if(preference==="fastest")return a.duration-b.duration;if(preference==="least-walking")return a.walking-b.walking;const score=(r:Route)=>r.cost/100+r.duration/60+r.walking/2;return score(a)-score(b)});
+const csvCell=(value:string|number)=>`"${String(value).replaceAll('"','""')}"`;
+export const expensesCsv=(items:Expense[])=>["Title,Amount,Mode,Date,Note",...items.map(x=>[x.title,x.amount,x.category,x.date,x.note||""].map(csvCell).join(","))].join("\n");
