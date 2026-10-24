@@ -6,3 +6,5 @@ work/
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+.agents/
+brag_repo_temp/

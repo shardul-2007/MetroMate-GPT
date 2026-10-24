@@ -6,6 +6,9 @@ export type StationNode = {
   label: string;
   level: string;
   direction?: string;
+  lat?: number;
+  lng?: number;
+  landmark?: string;
 };
 
 export type StationEdge = {

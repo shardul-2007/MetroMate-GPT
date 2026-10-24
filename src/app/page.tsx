@@ -21,6 +21,7 @@ import {
 import { getPilotStation } from "@/lib/graph";
 import { MetroTrainAnimation } from "@/components/metro-train-animation";
 import { MaharashtraMetroMap } from "@/components/maharashtra-metro-map";
+import { StationSatellitePreview } from "@/components/station-satellite-preview";
 
 export default function Home() {
   const router = useRouter();
@@ -31,6 +32,9 @@ export default function Home() {
   const [destId, setDestId] = useState<string>("platform-1");
   const [pref, setPref] = useState<string>("fastest");
   const [stepFreeOnly, setStepFreeOnly] = useState<boolean>(false);
+
+  const selectedDestNode = station.nodes.find((n) => n.id === destId);
+  const selectedStartNode = station.nodes.find((n) => n.id === startId);
 
   const handleSwap = () => {
     const temp = startId;
@@ -191,7 +195,17 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginTop: 4 }}>
+          {/* Small Google Map Satellite View for Selected Destination & Start Gate */}
+          {selectedDestNode && (
+            <StationSatellitePreview
+              node={selectedDestNode}
+              startNode={selectedStartNode}
+              title={`Aerial Footprint: ${selectedDestNode.label}`}
+              defaultHeight={175}
+            />
+          )}
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginTop: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <label htmlFor="route-pref" style={{ fontSize: 13, fontWeight: 600 }}>

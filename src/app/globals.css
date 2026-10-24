@@ -848,6 +848,15 @@ input:focus, select:focus, textarea:focus {
   animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Station Satellite Preview */
+.station-satellite-container {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.station-satellite-container iframe {
+  transition: opacity 0.2s ease;
+}
+
 /* Reduced Motion Accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {

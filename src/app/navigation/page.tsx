@@ -34,6 +34,7 @@ import {
   ComputedRoute,
   StationNode,
 } from "@/lib/graph";
+import { StationSatellitePreview } from "@/components/station-satellite-preview";
 
 function NavigationContent() {
   const router = useRouter();
@@ -357,6 +358,16 @@ function NavigationContent() {
             </button>
           </div>
         </div>
+
+        {/* Small Google Map Satellite View for Destination & Origin */}
+        {destNode && (
+          <StationSatellitePreview
+            node={destNode}
+            startNode={startNode}
+            title={`Destination Satellite View • ${destNode.label}`}
+            defaultHeight={180}
+          />
+        )}
       </section>
 
       {/* Area B: Visual Station Route (Schematic Diagram) */}
