@@ -23,9 +23,11 @@ const fallback = (message: string) => `Demo assistant (no OpenAI credential conf
 
 export async function POST(request: Request) {
   if (!allowed(request)) return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
+  let body: unknown;
+  try { body = await request.json(); } catch { return NextResponse.json({ error: "Send a valid JSON request body." }, { status: 400 }); }
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: "Send a non-empty message of 1-1200 characters." }, { status: 400 });
   try {
-    const parsed = schema.safeParse(await request.json());
-    if (!parsed.success) return NextResponse.json({ error: "Send a non-empty message of 1-1200 characters." }, { status: 400 });
     const key = process.env.OPENAI_API_KEY;
     if (!key) return NextResponse.json({ answer: fallback(parsed.data.message), source: "demo" });
     const client = new OpenAI({ apiKey: key, timeout: 12_000, maxRetries: 1 });
