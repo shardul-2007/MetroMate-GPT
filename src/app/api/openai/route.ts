@@ -19,13 +19,13 @@ function allowed(request: Request) {
   current.count += 1;
   return true;
 }
-const fallback = (message: string) => `Demo assistant (no OpenAI credential configured): ${message.toLowerCase().includes("station") ? "I don�t have verified station-level guidance. Please check official signage or ask station staff." : "Metro + walk is the lowest-cost demo option (?42) because it avoids the demo auto first/last-mile cost. These figures are illustrations, not live fares."}`;
+const fallback = (message: string) => `Demo assistant (no OpenAI credential configured): ${message.toLowerCase().includes("station") ? "I don't have verified station-level guidance. Please check official signage or ask station staff." : "Metro + walk is the lowest-cost demo option (INR 42) because it avoids the demo auto first/last-mile cost. These figures are illustrations, not live fares."}`;
 
 export async function POST(request: Request) {
   if (!allowed(request)) return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   try {
     const parsed = schema.safeParse(await request.json());
-    if (!parsed.success) return NextResponse.json({ error: "Send a non-empty message of 1�1200 characters." }, { status: 400 });
+    if (!parsed.success) return NextResponse.json({ error: "Send a non-empty message of 1-1200 characters." }, { status: 400 });
     const key = process.env.OPENAI_API_KEY;
     if (!key) return NextResponse.json({ answer: fallback(parsed.data.message), source: "demo" });
     const client = new OpenAI({ apiKey: key, timeout: 12_000, maxRetries: 1 });

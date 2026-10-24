@@ -1,4 +1,4 @@
-# MetroMate GPT � Beyond the Metro Map
+# MetroMate GPT - Beyond the Metro Map
 
 A privacy-conscious urban-mobility MVP for comparing illustrative trips, tracking browser-local commute expenses, and providing a grounded mobility assistant.
 
@@ -30,5 +30,5 @@ Run quality checks with `npm run typecheck`, `npm run test`, `npm run lint`, and
 - There is no live routing, scheduling, fare, disruption, platform, exit, or accessibility-data provider.
 - Planner values are deterministic demo estimates, not Pune Metro claims.
 - Lost Passenger Rescue never invents station-specific directions.
-- Expenses and preferences stay in the current browser�s local storage; there are no accounts or cloud synchronization.
+- Expenses and preferences stay in the current browser's local storage; there are no accounts or cloud synchronization.
 - The deployed in-memory throttle is a best-effort per-instance safeguard. A production multi-instance rollout should use a shared edge or database-backed rate limiter.
